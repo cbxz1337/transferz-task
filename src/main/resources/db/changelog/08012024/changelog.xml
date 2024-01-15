@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-airport-table" author="k.yakunyashin">
+        <createTable tableName="airport">
+            <column name="code" type="varchar(20)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(255)"/>
+            <column name="country" type="varchar(60)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-gin-idx-airport-name" author="k.yakunyashin">
+        <sql>
+            CREATE EXTENSION pg_trgm;
+            CREATE INDEX airport_name_idx ON airport USING gin (upper(name) gin_trgm_ops);
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-passenger-table" author="k.yakunyashin">
+        <createTable tableName="passenger">
+            <column name="name" type="varchar(1024)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="flight_code" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="passenger" indexName="flight-passenger-idx" unique="true">
+            <column name="upper(name)" computed="true"/>
+            <column name="flight_code"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="create-flight-table" author="k.yakunyashin">
+        <createTable tableName="flight">
+            <column name="code" type="varchar(20)">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="destination_airport_code" type="varchar(20)"/>
+            <column name="departure_date_time" type="timestamp"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="add-fk-flight_code-constraint-flight-table" author="k.yakunyashin">
+        <addForeignKeyConstraint baseTableName="passenger" baseColumnNames="flight_code"
+                                 constraintName="fk-flight-code" referencedTableName="flight"
+                                 referencedColumnNames="code"/>
+    </changeSet>
+    <changeSet id="add_flight_code_generator" author="k.yakunyashin">
+        <sqlFile path="sql/08012024.sql" splitStatements="false" relativeToChangelogFile="true"/>
+    </changeSet>
+    <changeSet id="add-dest-airport-constraint" author="k.yakunyashin">
+        <addForeignKeyConstraint baseTableName="flight" baseColumnNames="destination_airport_code"
+                                 constraintName="fk-dest-airport" referencedTableName="airport"
+                                 referencedColumnNames="code"/>
+    </changeSet>
+
+</databaseChangeLog>

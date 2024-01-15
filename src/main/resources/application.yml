@@ -2,17 +2,19 @@ server:
   port: 8080
   shutdown: graceful
 spring:
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.xml
   datasource:
-    url:
-    username:
-    password:
-    driver-class-name:
+    url: jdbc:postgresql://host.docker.internal:32768/dev-be-assignment-transferz
+    username: postgres
+    password: postgrespw
   jpa:
-    show-sql:
+    show-sql: true
   jackson:
     serialization:
       write-dates-as-timestamps: false
     date-format: yyyy-MM-dd HH:mm:ss
+max-flight-capacity: 3
 management:
   endpoints:
     web:
